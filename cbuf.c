@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netdb.h>
 #include <pthread.h>
 #include <assert.h>
 #include <inttypes.h>
@@ -24,7 +23,7 @@ static void cbuf_unlock(CBUF *b) {
 	pthread_mutex_unlock(&b->lock);
 }
 
-/* Returns how much data is filled in the buffer */
+/* Returns how much space is free in buffer */
 int cbuf_free_data_size(CBUF *b) {
 	int ret = b->size - (b->input - b->output);
 	assert(ret >= 0);
@@ -32,17 +31,17 @@ int cbuf_free_data_size(CBUF *b) {
 }
 
 void cbuf_dump(CBUF *b) {
-	LOGf("CBUF  [%10s]: size:%d pos:%d writepos:%d input:%"PRIu64" output:%"PRIu64" free_data:%d buffered:%"PRId64"\n",
-		b->name,
-		b->size,
-		b->pos,
-		b->writepos,
-		b->input,
-		b->output,
-		cbuf_free_data_size(b),
-		b->input - b->output
-	);
-/*
+	// LOGf("CBUF  [%10s]: size:%d pos:%d writepos:%d input:%"PRIu64" output:%"PRIu64" free_data:%d buffered:%"PRId64"\n",
+	// 	b->name,
+	// 	b->size,
+	// 	b->pos,
+	// 	b->writepos,
+	// 	b->input,
+	// 	b->output,
+	// 	cbuf_free_data_size(b),
+	// 	b->input - b->output
+	// );
+
 	char *z = b->buffer;
 	printf("cbuf(%s), dump:", b->name);
 	int i;
@@ -50,7 +49,7 @@ void cbuf_dump(CBUF *b) {
 		printf("%c", z[i]);
 	}
 	printf("\n\n");
-*/
+
 }
 
 CBUF *cbuf_init(int buffer_size, char *name) {
@@ -70,7 +69,7 @@ CBUF *cbuf_init(int buffer_size, char *name) {
 	b->writepos = 0;
 	b->buffer   = calloc(1, buffer_size);
 	if (!b->buffer) {
-		LOGf("CBUF  [%10s]: Can't allocate buffer size: %d\n", name, buffer_size);
+		printf("CBUF  [%10s]: Can't allocate buffer size: %d\n", name, buffer_size);
 		free(b);
 		return NULL;
 	}
@@ -96,7 +95,7 @@ int cbuf_fill(CBUF *b, uint8_t *data, int datasize) {
 	assert(datasize <= b->size);
 	int to_copy = min(datasize, (b->size - b->pos));
 	if (!to_copy || !data) {
-		LOGf("CBUF [%10s]: Nothing to fill.\n", b->name);
+		printf("CBUF [%10s]: Nothing to fill.\n", b->name);
 		ret = -2;
 		goto OUT;
 	}
@@ -152,7 +151,7 @@ void *cbuf_get(CBUF *b, int size, int *ret_datasize) {
 	void *ret = NULL;
 	int new_size = min(size, cbuf_size_to_end(b));
 	if (b->debug_get) {
-		LOGf("1 cbuf_get(%s, %d) new_size: %d size_to_end: %d\n",
+		printf("1 cbuf_get(%s, %d) new_size: %d size_to_end: %d\n",
 				b->name, size, new_size, cbuf_size_to_end(b));
 		cbuf_dump(b);
 	}
@@ -166,7 +165,7 @@ void *cbuf_get(CBUF *b, int size, int *ret_datasize) {
 	b->writepos += new_size; // Move writepos
 	b->output   += new_size;
 	if (b->writepos > b->size) {
-		LOGf("!!! b->writepos > b->size !!! size:%d new_size:%d\n", size, new_size);
+		printf("!!! b->writepos > b->size !!! size:%d new_size:%d\n", size, new_size);
 		cbuf_dump(b);
 		assert(b->writepos <= b->size);
 	}
@@ -175,7 +174,7 @@ void *cbuf_get(CBUF *b, int size, int *ret_datasize) {
 
 OUT:
 	if (b->debug_get) {
-		LOGf("2 cbuf_get(%s, %d) new_size: %d size_to_end: %d ret_sz:%d\n",
+		printf("2 cbuf_get(%s, %d) new_size: %d size_to_end: %d ret_sz:%d\n",
 				b->name, size, new_size, cbuf_size_to_end(b), *ret_datasize);
 		cbuf_dump(b);
 		b->debug_get = 0;
@@ -209,7 +208,7 @@ void cbuf_copy(CBUF *from, CBUF *to) {
 	do {
 		data = cbuf_get(from, from->input - from->output, &data_size);
 		if (from->debug_get)
-			LOGf("copied from %s to %s size=%d\n", from->name, to->name, data_size);
+			printf("copied from %s to %s size=%d\n", from->name, to->name, data_size);
 		if (!data || data_size <= 0)
 			break;
 		cbuf_fill(to, data, data_size);
@@ -293,3 +292,16 @@ void cbuf_test(void) {
 
 }
 */
+// void main(void) {
+// 	CBUF *out;
+// 	out = cbuf_init(64, "out");
+// 	printf("%i\n",cbuf_free_data_size(out));
+// 	cbuf_fill(out, "12", 2);
+// 	//cbuf_fill(out, "34", 2);
+// 	cbuf_fill(out, "z" , 1);
+	
+// 	printf("%i\n",cbuf_free_data_size(out));
+// 	int size;
+// 	cbuf_get(out,2,&size);
+// 	printf("%i\n",cbuf_free_data_size(out));
+// }
