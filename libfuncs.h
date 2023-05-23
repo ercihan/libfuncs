@@ -34,14 +34,14 @@
 #define min(a,b) ((a < b) ? a : b)
 #define max(a,b) ((a > b) ? a : b)
 
-#include "asyncdns.h"
+//#include "asyncdns.h"
 #include "http_response.h"
-#include "io.h"
+//#include "io.h"
 #include "list.h"
 #include "log.h"
 #include "queue.h"
-#include "cbuf.h"
-#include "server.h"
+//#include "cbuf.h"
+//#include "server.h"
 #include "misc.h"
 
 #endif
