@@ -8,7 +8,7 @@
 #ifndef CBUF_H
 #define CBUF_H
 
-#include <netdb.h>
+#include <stdint.h>
 
 // Circular buffer
 typedef struct {
@@ -37,5 +37,7 @@ int cbuf_data_size(CBUF *b);
 void cbuf_poison(CBUF *b, char poison_byte);
 
 void cbuf_dump(CBUF *b);
+
+int cbuf_free_data_size(CBUF *b);
 
 #endif
