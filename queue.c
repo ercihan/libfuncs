@@ -13,6 +13,10 @@
 
 #include "queue.h"
 
+#ifndef FREE
+	#define FREE(x) if(x) { free(x); x=NULL; }
+#endif
+
 QUEUE *queue_new(void) {
 	QUEUE *q = calloc(1, sizeof(QUEUE));
 	if (!q)
