@@ -9,10 +9,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-#include <err.h>
 #include <pthread.h>
 
-#include "libfuncs.h"
 #include "queue.h"
 
 QUEUE *queue_new(void) {
