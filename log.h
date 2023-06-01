@@ -26,13 +26,10 @@ void log_perror(const char *message, int _errno);
 
 void log_set_out_fd(FILE *new_out_fd);
 
-#ifdef DEBUG
-	#define dbg_LOG  LOG
-	#define dbg_LOGf LOGf
-#else
-	#define dbg_LOG(arg)  do { /* arg */ } while(0)
-	#define dbg_LOGf(...) do { /* ... */ } while(0)
-#endif
+
+#define dbg_LOG(arg)  do { /* arg */ } while(0)
+#define dbg_LOGf(...) do { /* ... */ } while(0)
+
 
 #ifdef __cplusplus
 }
